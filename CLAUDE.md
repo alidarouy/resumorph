@@ -1,58 +1,63 @@
-# CLAUDE.md - Guide pour Claude Code
+# CLAUDE.md - Guide for Claude Code
 
-Ce fichier aide Claude Code à comprendre le projet et à fournir une assistance pertinente.
+This file helps Claude Code understand the project and provide relevant assistance.
 
-## Vue d'ensemble
+## Important Rules
 
-Application de suivi de candidatures (Job Application Tracker) avec :
-- Interface Kanban pour les candidatures
-- Assistant IA conversationnel (LangChain + Gemini)
-- Génération de CV PDF
-- Authentification Clerk
+- **All code and files must be in English** (variable names, comments, documentation, commits)
+- Only user-facing UI text can be in French
 
-## Stack technique
+## Overview
 
-| Catégorie | Technologie |
-|-----------|-------------|
+Job Application Tracker with:
+- Kanban board for applications
+- AI conversational assistant (LangChain + Gemini)
+- PDF CV generation
+- Clerk authentication
+
+## Tech Stack
+
+| Category | Technology |
+|----------|------------|
 | Framework | TanStack Start (React 19) |
 | Routing | TanStack Router (file-based) |
 | Data fetching | TanStack Query |
 | ORM | Drizzle |
-| BDD | PostgreSQL |
+| Database | PostgreSQL |
 | Auth | Clerk |
-| IA | LangChain.js + Gemini |
+| AI | LangChain.js + Gemini |
 | Styling | TailwindCSS + shadcn/ui |
 | PDF | @react-pdf/renderer |
 
-## Commandes utiles
+## Useful Commands
 
 ```bash
-bun run dev        # Serveur de développement
-bun run build      # Build production
-bun run db:push    # Appliquer le schéma à la BDD
-bun run db:studio  # Interface visuelle Drizzle
+bun run dev        # Development server
+bun run build      # Production build
+bun run db:push    # Apply schema to database
+bun run db:studio  # Drizzle visual interface
 ```
 
-## Architecture clé
+## Key Architecture
 
 ### Server Functions (TanStack Start)
-Les appels serveur utilisent `createServerFn` :
+Server calls use `createServerFn`:
 ```typescript
 export const myFunction = createServerFn({ method: "POST" }).handler(
   async (ctx: { data: InputType }): Promise<OutputType> => {
-    // Logique serveur
+    // Server logic
   }
 );
 ```
 
 ### Repository Pattern
-Tous les accès BDD passent par `app/server/repositories/` :
+All database access goes through `app/server/repositories/`:
 - `contacts.repository.ts`
 - `companies.repository.ts`
 - `applications.repository.ts`
 - `conversations.repository.ts`
 
-Interface type :
+Type interface:
 ```typescript
 interface IRepository<T> {
   findAll(userId: string): Promise<T[]>;
@@ -63,9 +68,9 @@ interface IRepository<T> {
 }
 ```
 
-### Agent IA (LangChain)
+### AI Agent (LangChain)
 
-**Configuration LLM** (`app/server/agent/llm.ts`) :
+**LLM Configuration** (`app/server/agent/llm.ts`):
 ```typescript
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 export const llm = new ChatGoogleGenerativeAI({
@@ -73,100 +78,107 @@ export const llm = new ChatGoogleGenerativeAI({
 });
 ```
 
-**Tools** (`app/server/agent/tools/`) :
-Chaque tool est créé avec une factory qui reçoit le `userId` :
+**Tools** (`app/server/agent/tools/`):
+Each tool is created with a factory that receives the `userId`:
 ```typescript
 export const createMyTool = (userId: string) =>
   tool(
-    async (args) => { /* logique */ },
+    async (args) => { /* logic */ },
     {
       name: "tool_name",
-      description: "Description pour le LLM",
+      description: "Description for the LLM",
       schema: z.object({ /* Zod schema */ }),
     }
   );
 ```
 
-**Streaming** (`app/server/agent/stream.ts`) :
-- Utilise un générateur async (`async function*`)
-- Filtre les métadonnées de function calls de Gemini
-- Retourne une `Response` avec `ReadableStream` (SSE)
+**Streaming** (`app/server/agent/stream.ts`):
+- Uses async generator (`async function*`)
+- Filters Gemini function call metadata
+- Returns a `Response` with `ReadableStream` (SSE)
 
-### Schéma BDD (`app/db/schema.ts`)
+### Database Schema (`app/db/schema.ts`)
 
-Tables principales :
-- `experiences` - Expériences professionnelles
-- `skills` - Compétences
-- `experience_skills` - Relation N:N
-- `companies` - Entreprises
+Main tables:
+- `experiences` - Professional experiences
+- `skills` - Skills
+- `experience_skills` - N:N relationship
+- `companies` - Companies
 - `contacts` - Contacts
-- `job_applications` - Candidatures
-- `conversations` - Historique des chats
-- `messages` - Messages des conversations
+- `job_applications` - Job applications
+- `conversations` - Chat history
+- `messages` - Conversation messages
 
 ### Routes (`app/routes/`)
 
 | Route | Description |
 |-------|-------------|
 | `/` | Landing page |
-| `/profile` | Gestion du profil et expériences |
-| `/applications` | Kanban des candidatures |
-| `/assistant` | Chat IA |
-| `/contacts` | Liste des contacts |
-| `/cv` | Génération PDF |
+| `/profile` | Profile and experiences management |
+| `/applications` | Applications Kanban board |
+| `/assistant` | AI Chat |
+| `/contacts` | Contacts list |
+| `/cv` | PDF generation |
 
-## Patterns importants
+## Important Patterns
 
-### Ajout d'un nouveau tool IA
+### Adding a new AI tool
 
-1. Créer le fichier dans `app/server/agent/tools/`
-2. Exporter depuis `tools/index.ts`
-3. Ajouter à `createTools()` dans `tools/index.ts`
+1. Create file in `app/server/agent/tools/`
+2. Export from `tools/index.ts`
+3. Add to `createTools()` in `tools/index.ts`
 
-### Ajout d'une nouvelle entité
+### Adding a new entity
 
-1. Ajouter la table dans `app/db/schema.ts`
-2. Exécuter `bun run db:push`
-3. Créer le repository dans `app/server/repositories/`
-4. Exporter depuis `repositories/index.ts`
-5. (Optionnel) Créer les tools IA correspondants
+1. Add table in `app/db/schema.ts`
+2. Run `bun run db:push`
+3. Create repository in `app/server/repositories/`
+4. Export from `repositories/index.ts`
+5. (Optional) Create corresponding AI tools
 
-### Composants UI
+### UI Components
 
-Utilise shadcn/ui. Les composants sont dans `app/components/ui/`.
-Pour ajouter un composant : copier depuis shadcn et adapter.
+Uses shadcn/ui. Components are in `app/components/ui/`.
+To add a component: copy from shadcn and adapt.
 
-## Points d'attention
+## Development Best Practices
 
-### Gemini et streaming
-Gemini envoie les tool calls complets (pas en chunks). Le content peut contenir du JSON brut des function calls qu'il faut filtrer :
+- **Minimal changes**: Focus on the specific issue and make the smallest possible changes
+- **Readable code**: Write clear, understandable code that is easy to review
+- **Semantic commits**: Follow conventional commit format (`feat:`, `fix:`, `docs:`, `test:`, `chore:`)
+- **Verify before commit**: Always run `bun run build` to check the code compiles
+
+## Important Notes
+
+### Gemini and streaming
+Gemini sends complete tool calls (not in chunks). Content may contain raw JSON from function calls that must be filtered:
 ```typescript
 if (text.includes('"type":"functionCall"')) continue;
 ```
 
 ### TanStack Start Server Functions
-- Retourner `Response` pour le streaming SSE
-- Les types sont inférés, mais typer explicitement pour la clarté
+- Return `Response` for SSE streaming
+- Types are inferred, but type explicitly for clarity
 
 ### Clerk Auth
-Le `userId` est récupéré via `useAuth()` côté client et passé aux server functions.
+The `userId` is retrieved via `useAuth()` on client side and passed to server functions.
 
-## Tests manuels
+## Manual Tests
 
-1. **Assistant** : "Liste mes candidatures" → doit appeler `list_applications`
-2. **Kanban** : Drag & drop une carte → doit mettre à jour le statut
-3. **CV** : Cliquer "Télécharger PDF" → doit générer le PDF
+1. **Assistant**: "List my applications" → should call `list_applications`
+2. **Kanban**: Drag & drop a card → should update status
+3. **CV**: Click "Download PDF" → should generate PDF
 
-## Dépannage
+## Troubleshooting
 
-### "Erreur de streaming"
-- Vérifier `GOOGLE_API_KEY` dans `.env`
-- Vérifier les logs serveur pour l'erreur exacte
+### "Streaming error"
+- Check `GOOGLE_API_KEY` in `.env`
+- Check server logs for exact error
 
-### Tables non trouvées
+### Tables not found
 ```bash
 bun run db:push
 ```
 
-### Types Drizzle non à jour
-Redémarrer le serveur de dev après modification du schéma.
+### Drizzle types not up to date
+Restart dev server after schema modification.

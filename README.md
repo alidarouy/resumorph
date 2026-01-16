@@ -1,47 +1,47 @@
-# Job Application Tracker
+# Resumorph
 
-Application de suivi de candidatures avec assistant IA intégré.
+Job application tracker with integrated AI assistant.
 
-## Stack Technique
+## Tech Stack
 
 - **Frontend**: React 19, TanStack Router, TanStack Query, TailwindCSS
 - **Backend**: TanStack Start (server functions), Drizzle ORM
-- **Base de données**: PostgreSQL
+- **Database**: PostgreSQL
 - **Auth**: Clerk
-- **IA**: LangChain.js + Google Gemini (gemini-3-flash-preview)
+- **AI**: LangChain.js + Google Gemini (gemini-3-flash-preview)
 - **PDF**: @react-pdf/renderer
 
-## Prérequis
+## Prerequisites
 
 - Node.js >= 22.12.0
-- Bun (recommandé) ou npm
+- Bun (recommended) or npm
 - PostgreSQL
-- Compte Clerk (auth)
-- Clé API Google AI (Gemini)
+- Clerk account (auth)
+- Google AI API key (Gemini)
 
 ## Installation
 
 ```bash
-# Cloner le projet
-git clone <repo-url>
-cd sand
+# Clone the project
+git clone https://github.com/alidarouy/resumorph.git
+cd resumorph
 
-# Installer les dépendances
+# Install dependencies
 bun install
 
-# Configurer les variables d'environnement
+# Configure environment variables
 cp .env.example .env
 ```
 
-## Variables d'environnement
+## Environment Variables
 
-Créer un fichier `.env` à la racine :
+Create a `.env` file at the root:
 
 ```env
-# Base de données PostgreSQL
+# PostgreSQL Database
 DATABASE_URL=postgresql://user:password@localhost:5432/jobtracker
 
-# Clerk (authentification)
+# Clerk (authentication)
 CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 
@@ -52,90 +52,90 @@ GOOGLE_API_KEY=...
 ## Scripts
 
 ```bash
-# Développement
+# Development
 bun run dev
 
-# Build production
+# Production build
 bun run build
 
-# Lancer en production
+# Run in production
 bun run start
 
-# Base de données
-bun run db:push      # Appliquer le schéma
-bun run db:generate  # Générer les migrations
-bun run db:migrate   # Exécuter les migrations
-bun run db:studio    # Interface Drizzle Studio
+# Database
+bun run db:push      # Apply schema
+bun run db:generate  # Generate migrations
+bun run db:migrate   # Run migrations
+bun run db:studio    # Drizzle Studio interface
 ```
 
-## Structure du projet
+## Project Structure
 
 ```
 app/
-├── components/          # Composants React
-│   ├── ui/             # Composants UI (shadcn)
-│   └── CVDocument.tsx  # Template PDF du CV
+├── components/          # React components
+│   ├── ui/             # UI components (shadcn)
+│   └── CVDocument.tsx  # PDF CV template
 ├── db/
-│   ├── index.ts        # Client Drizzle
-│   └── schema.ts       # Schéma de la BDD
+│   ├── index.ts        # Drizzle client
+│   └── schema.ts       # Database schema
 ├── routes/
-│   ├── __root.tsx      # Layout racine
-│   ├── index.tsx       # Page d'accueil
-│   ├── applications.tsx # Kanban des candidatures
-│   ├── assistant.tsx   # Chat avec l'assistant IA
-│   ├── contacts.tsx    # Gestion des contacts
-│   ├── cv.tsx          # Génération de CV
-│   └── profile.tsx     # Profil utilisateur
+│   ├── __root.tsx      # Root layout
+│   ├── index.tsx       # Home page
+│   ├── applications.tsx # Applications Kanban
+│   ├── assistant.tsx   # AI chat
+│   ├── contacts.tsx    # Contacts management
+│   ├── cv.tsx          # CV generation
+│   └── profile.tsx     # User profile
 ├── server/
-│   ├── agent/          # Agent IA LangChain
-│   │   ├── agent.ts    # Logique de l'agent (non-streaming)
-│   │   ├── stream.ts   # Streaming des réponses
-│   │   ├── llm.ts      # Configuration LLM
-│   │   ├── tools/      # Outils de l'agent
+│   ├── agent/          # LangChain AI agent
+│   │   ├── agent.ts    # Agent logic (non-streaming)
+│   │   ├── stream.ts   # Response streaming
+│   │   ├── llm.ts      # LLM configuration
+│   │   ├── tools/      # Agent tools
 │   │   └── index.ts    # Server functions
-│   ├── repositories/   # Couche d'accès aux données
-│   └── functions.ts    # Server functions métier
+│   ├── repositories/   # Data access layer
+│   └── functions.ts    # Business server functions
 └── lib/
-    └── utils.ts        # Utilitaires (cn, etc.)
+    └── utils.ts        # Utilities (cn, etc.)
 ```
 
-## Fonctionnalités
+## Features
 
-### Kanban des candidatures
-- Drag & drop entre colonnes (Brouillon, Postulé, Entretien, etc.)
-- Ajout/modification de candidatures
-- Liaison avec entreprises et contacts
+### Applications Kanban
+- Drag & drop between columns (Draft, Applied, Interview, etc.)
+- Add/edit applications
+- Link with companies and contacts
 
-### Assistant IA
-- Chat en streaming avec Gemini
-- Gestion des contacts, entreprises et candidatures en langage naturel
-- Contexte CV de l'utilisateur intégré
-- Historique des conversations persisté
+### AI Assistant
+- Streaming chat with Gemini
+- Natural language management of contacts, companies and applications
+- User CV context integrated
+- Persisted conversation history
 
-### Génération de CV
-- Template PDF professionnel
-- Export basé sur les expériences du profil
+### CV Generation
+- Professional PDF template
+- Export based on profile experiences
 
-### Profil
-- Gestion des expériences professionnelles
-- Compétences associées aux expériences
+### Profile
+- Professional experiences management
+- Skills associated with experiences
 
 ## Architecture
 
 ### Repository Pattern
-Les accès à la base de données passent par des repositories (`app/server/repositories/`) qui encapsulent les requêtes Drizzle.
+Database access goes through repositories (`app/server/repositories/`) that encapsulate Drizzle queries.
 
-### Agent IA
-L'agent utilise LangChain avec des tools pour interagir avec les données :
+### AI Agent
+The agent uses LangChain with tools to interact with data:
 - `add_contact`, `list_contacts`
 - `add_company`, `list_companies`
 - `add_application`, `list_applications`, `update_application`
 
-Le streaming est géré via SSE pour afficher les réponses en temps réel.
+Streaming is handled via SSE to display responses in real-time.
 
 ### Server Functions
-TanStack Start permet de définir des fonctions serveur appelables depuis le client via `createServerFn`.
+TanStack Start allows defining server functions callable from the client via `createServerFn`.
 
-## Licence
+## License
 
 MIT
