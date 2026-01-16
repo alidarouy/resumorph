@@ -96,6 +96,9 @@ function AssistantPage() {
     setInput("");
     setIsLoading(true);
 
+    // Track which tools were used to know which queries to invalidate
+    const toolsUsed = new Set<string>();
+
     try {
       const response = await chatStream({
         data: {
@@ -132,6 +135,8 @@ function AssistantPage() {
 
             if (data.type === "conversationId" && !conversationId) {
               setConversationId(data.value);
+            } else if (data.type === "toolUsed") {
+              toolsUsed.add(data.value);
             } else if (data.type === "text") {
               setMessages((prev) => {
                 const newMessages = [...prev];
@@ -155,7 +160,32 @@ function AssistantPage() {
         }
       }
 
-      await queryClient.invalidateQueries({ queryKey: ["conversations", userId] });
+      // Invalidate queries based on which tools were used
+      const invalidations: Promise<void>[] = [
+        queryClient.invalidateQueries({ queryKey: ["conversations", userId] }),
+      ];
+
+      // Map tool names to query keys
+      const toolToQueryKey: Record<string, string[]> = {
+        create_application: ["applications"],
+        list_applications: ["applications"],
+        update_application: ["applications"],
+        create_contact: ["contacts"],
+        list_contacts: ["contacts"],
+        create_company: ["companies"],
+        list_companies: ["companies"],
+      };
+
+      for (const tool of toolsUsed) {
+        const queryKeys = toolToQueryKey[tool];
+        if (queryKeys) {
+          for (const key of queryKeys) {
+            invalidations.push(queryClient.invalidateQueries({ queryKey: [key] }));
+          }
+        }
+      }
+
+      await Promise.all(invalidations);
     } catch (error) {
       console.error("Chat error:", error);
       setMessages((prev) => {

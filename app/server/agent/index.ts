@@ -128,10 +128,18 @@ export const chatStream = createServerFn({ method: "POST" }).handler(
 
           // Stream the agent response
           for await (const chunk of streamAgent(userId, allMessages)) {
-            fullResponse += chunk;
-            controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify({ type: "text", value: chunk })}\n\n`)
-            );
+            // Check if this is a tool usage marker
+            const toolMatch = chunk.match(/^__TOOL_USED__(.+)__$/);
+            if (toolMatch) {
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ type: "toolUsed", value: toolMatch[1] })}\n\n`)
+              );
+            } else {
+              fullResponse += chunk;
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ type: "text", value: chunk })}\n\n`)
+              );
+            }
           }
 
           // Save the complete response

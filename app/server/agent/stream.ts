@@ -160,6 +160,9 @@ export async function* streamAgent(
         throw new Error(`Tool not found: ${toolCall.name}`);
       }
 
+      // Notify frontend about tool usage
+      yield `__TOOL_USED__${toolCall.name}__`;
+
       const toolResult = await tool.invoke(toolCall.args);
 
       langchainMessages.push({

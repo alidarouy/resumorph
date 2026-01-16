@@ -127,6 +127,17 @@ Main tables:
 1. Create file in `app/server/agent/tools/`
 2. Export from `tools/index.ts`
 3. Add to `createTools()` in `tools/index.ts`
+4. **Important**: Update `toolToQueryKey` in `app/routes/assistant.tsx` to map the new tool to the queries it affects
+
+The assistant page invalidates TanStack Query caches only when relevant tools are used. Example:
+```typescript
+const toolToQueryKey: Record<string, string[]> = {
+  create_application: ["applications"],
+  update_application: ["applications"],
+  create_contact: ["contacts"],
+  // Add your new tool here
+};
+```
 
 ### Adding a new entity
 
