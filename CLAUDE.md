@@ -4,8 +4,8 @@ This file helps Claude Code understand the project and provide relevant assistan
 
 ## Important Rules
 
-- **All code and files must be in English** (variable names, comments, documentation, commits)
-- Only user-facing UI text can be in French
+- **All code and files must be in English** (variable names, comments, documentation)
+- **All git commits must be in English** following conventional commits format
 
 ## Overview
 
